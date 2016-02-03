@@ -20,6 +20,9 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: "networkRequest:", forControlEvents: UIControlEvents.ValueChanged)
+        tableView.insertSubview(refreshControl, atIndex: 0)
         
         tableView.dataSource = self
         tableView.delegate = self
@@ -66,7 +69,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         detailViewController.movie = movie
     }
     
-    func networkRequest() {
+    func networkRequest(refreshControl: UIRefreshControl? = nil) {
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         let url = NSURL(string: "http://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
         let request = NSURLRequest(URL: url!)
@@ -86,12 +89,15 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                         MBProgressHUD.hideHUDForView(self.view, animated: true)
                         self.tableView.reloadData()
                         self.networkErrorAlert.hidden = true
+                        if let refreshControl = refreshControl {
+                            refreshControl.endRefreshing()
+                        }
                     }
                 } else {
+                    MBProgressHUD.hideHUDForView(self.view, animated: true)
                     self.networkErrorAlert.hidden = false
                 }
         })
         task.resume()
     }
-
 }
