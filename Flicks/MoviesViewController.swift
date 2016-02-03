@@ -13,6 +13,7 @@ import MBProgressHUD
 class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var networkErrorAlert: UIView!
     
     var movies: [NSDictionary]?
     var endpoint: String!
@@ -22,6 +23,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         
         tableView.dataSource = self
         tableView.delegate = self
+        networkErrorAlert.hidden = true
         
         networkRequest()
     }
@@ -83,7 +85,10 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                         self.movies = responseDictionary["results"] as?[NSDictionary]
                         MBProgressHUD.hideHUDForView(self.view, animated: true)
                         self.tableView.reloadData()
+                        self.networkErrorAlert.hidden = true
                     }
+                } else {
+                    self.networkErrorAlert.hidden = false
                 }
         })
         task.resume()
