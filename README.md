@@ -21,4 +21,5 @@ __My Own Ideas__
 - [x] Add infinite scroll
 
 __Video Walkthrough__
+
 ![Video Walkthrough](flicks.gif)
