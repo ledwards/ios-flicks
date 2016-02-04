@@ -27,7 +27,8 @@ class DetailViewController: UIViewController {
         let overview = movie["overview"] as! String
         titleLabel.text = title
         overviewLabel.text = overview
-        overviewLabel.sizeToFit()
+        overviewLabel.sizeToFit()        
+        self.navigationItem.title = title
         
         let baseUrl = "http://image.tmdb.org/t/p/w500"
         if let posterPath = movie["poster_path"] as? String {

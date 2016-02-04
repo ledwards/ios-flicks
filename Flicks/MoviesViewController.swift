@@ -17,12 +17,14 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
     var movies: [NSDictionary]?
     var endpoint: String!
+    var name: String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: "refreshCallback:", forControlEvents: UIControlEvents.ValueChanged)
         tableView.insertSubview(refreshControl, atIndex: 0)
+        
         
         tableView.dataSource = self
         tableView.delegate = self
@@ -62,6 +64,9 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let movie = movies![indexPath!.row]
         
         let detailViewController = segue.destinationViewController as! DetailViewController
+        let backItem = UIBarButtonItem()
+        backItem.title = self.navigationController!.tabBarItem.title
+        navigationItem.backBarButtonItem = backItem
         detailViewController.movie = movie
     }
     

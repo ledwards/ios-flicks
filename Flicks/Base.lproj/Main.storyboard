@@ -126,7 +126,9 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" id="58k-fK-fWO"/>
+                    <navigationItem key="navigationItem" id="58k-fK-fWO">
+                        <barButtonItem key="backBarButtonItem" title="Back" id="0XW-qs-YAE"/>
+                    </navigationItem>
                     <connections>
                         <outlet property="infoView" destination="aKY-Kf-JeU" id="8Of-MN-ikA"/>
                         <outlet property="overviewLabel" destination="h7N-Z0-grF" id="Qgs-3g-9wD"/>
@@ -147,7 +149,7 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" id="BAv-lk-MO2">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <color key="backgroundColor" red="0.0" green="0.0" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
