@@ -33,6 +33,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let segmentedButton = UIBarButtonItem(customView: segmentedControl)
         segmentedControl.addTarget(self, action: "segmentedButtonTapped:", forControlEvents: .ValueChanged)
         navigationItem.rightBarButtonItem = segmentedButton
+        segmentedControl.selectedSegmentIndex = 0
         
         collectionView.dataSource = self
         
