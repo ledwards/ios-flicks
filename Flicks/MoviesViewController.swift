@@ -23,13 +23,14 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     override func viewDidLoad() {
         super.viewDidLoad()
         let refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: "refreshCallback:", forControlEvents: UIControlEvents.ValueChanged)
+        refreshControl.addTarget(self, action: "refreshCallback:", forControlEvents: .ValueChanged)
         tableView.insertSubview(refreshControl, atIndex: 0)
         collectionView.hidden = true
         
         let segmentedControl = UISegmentedControl(items: ["List", "Collection"])
         segmentedControl.sizeToFit()
         let segmentedButton = UIBarButtonItem(customView: segmentedControl)
+        segmentedControl.addTarget(self, action: "segmentedButtonTapped:", forControlEvents: .ValueChanged)
         navigationItem.rightBarButtonItem = segmentedButton
         
         collectionView.dataSource = self
@@ -39,6 +40,19 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         networkErrorAlert.hidden = true
         
         networkRequest()
+    }
+    
+    func segmentedButtonTapped(sender: UISegmentedControl) {
+        switch sender.selectedSegmentIndex {
+        case 0:
+            self.tableView.hidden = false
+            self.collectionView.hidden = true
+        case 1:
+            self.tableView.hidden = true
+            self.collectionView.hidden = false
+        default:
+            break
+        }
     }
 
     override func didReceiveMemoryWarning() {
