@@ -16,9 +16,10 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var networkErrorAlert: UIView!
     
-    var movies: [NSDictionary]?
+    var movies: [NSDictionary] = []
     var endpoint: String!
     var name: String!
+    var lastPageLoaded = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,6 +41,13 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         networkErrorAlert.hidden = true
         
         networkRequest()
+        
+        let tableFooterView: UIView = UIView(frame: CGRectMake(0, 0, 320, 50))
+        let loadingView: UIActivityIndicatorView = UIActivityIndicatorView(activityIndicatorStyle: .Gray)
+        loadingView.startAnimating()
+        loadingView.center = tableFooterView.center
+        tableFooterView.addSubview(loadingView)
+        self.tableView.tableFooterView = tableFooterView
     }
     
     func segmentedButtonTapped(sender: UISegmentedControl) {
@@ -60,17 +68,21 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     }
 
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int{
-        return movies?.count ?? 0
+        return movies.count
     }
 
 
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
         let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieCell
-        let movie = movies![indexPath.row]
+        let movie = movies[indexPath.row]
         let title = movie["title"] as! String
         let overview = movie["overview"] as! String
         cell.titleLabel.text = title
         cell.overviewLabel.text = overview
+        
+        if indexPath.row == self.movies.count - 1 {
+            networkRequest()
+        }
 
         let baseUrl = "http://image.tmdb.org/t/p/w500"
         if let posterPath = movie["poster_path"] as? String {
@@ -102,12 +114,16 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     }
     
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return movies?.count ?? 0
+        return movies.count
     }
     
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("MovieCollectionCell", forIndexPath: indexPath) as! MovieCollectionCell
-        let movie = movies![indexPath.item]
+        let movie = movies[indexPath.item]
+        
+        if indexPath.item == self.movies.count - 1 {
+            networkRequest()
+        }
         
         let baseUrl = "http://image.tmdb.org/t/p/w500"
         if let posterPath = movie["poster_path"] as? String {
@@ -148,7 +164,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             let cell = sender as! MovieCollectionCell
             indexPath = collectionView.indexPathForCell(cell)
         }
-        let movie = movies![indexPath!.row]
+        let movie = movies[indexPath!.row]
         
         let detailViewController = segue.destinationViewController as! DetailViewController
         let backItem = UIBarButtonItem()
@@ -165,7 +181,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
     func networkRequest(refreshControl: UIRefreshControl? = nil) {
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = NSURL(string: "http://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
+        let page = self.lastPageLoaded + 1
+        let url = NSURL(string: "http://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)&page=\(page)")
         let request = NSURLRequest(URL: url!)
         let session = NSURLSession(
             configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
@@ -179,7 +196,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             completionHandler: { (dataOrNil, response, error) in
                 if let data = dataOrNil {
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(data, options:[]) as? NSDictionary {
-                        self.movies = responseDictionary["results"] as?[NSDictionary]
+                        self.movies += responseDictionary["results"] as! [NSDictionary]
+                        self.lastPageLoaded = responseDictionary["page"] as! Int
                         MBProgressHUD.hideHUDForView(self.view, animated: true)
                         self.tableView.reloadData()
                         self.collectionView.reloadData()

@@ -18,4 +18,4 @@ __Optional__
 - [x] Customize the navigation bar.
 
 __My Own Ideas__
-- [ ] Add infinite scroll
+- [x] Add infinite scroll
