@@ -1,6 +1,8 @@
 # ios-flicks
 iOS Flicks app for CodePath
 
+Time to complete: 8 hours
+
 __Required__
 - [x] User can view a list of movies currently playing in theaters from The Movie Database. Poster images must be loaded asynchronously.
 - [x] User can view movie details by tapping on a cell.
