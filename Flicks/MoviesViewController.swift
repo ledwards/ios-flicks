@@ -10,7 +10,7 @@ import UIKit
 import AFNetworking
 import MBProgressHUD
 
-class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource {
+class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UISearchBarDelegate {
     
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var collectionView: UICollectionView!
@@ -39,6 +39,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Search", style: .Plain, target: self, action: "search:")
         
         collectionView.dataSource = self
+        searchBar.delegate = self
         
         tableView.dataSource = self
         tableView.delegate = self
@@ -69,7 +70,52 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     }
     
     func search(sender: UIView) {
-        self.searchBar.hidden = false
+        if self.searchBar.hidden {
+            self.searchBar.hidden = false
+            self.searchBar.becomeFirstResponder()
+        }
+        else {
+            self.searchBar.hidden = true
+            self.movies = []
+            self.lastPageLoaded = 0
+            self.searchBar.text = ""
+            networkRequest()
+        }
+    }
+    
+    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText != "" {
+            searchRequest(searchText)
+        }
+    }
+    
+    func searchRequest(searchText: String) {
+        let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+        let qs = searchText.stringByAddingPercentEncodingWithAllowedCharacters(.URLHostAllowedCharacterSet())!
+        let url = NSURL(string: "http://api.themoviedb.org/3/search/movie?api_key=\(apiKey)&query=\(qs)")
+        let request = NSURLRequest(URL: url!)
+        let session = NSURLSession(
+            configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
+            delegate: nil,
+            delegateQueue: NSOperationQueue.mainQueue()
+        )
+        
+        MBProgressHUD.showHUDAddedTo(self.view, animated: true)
+        
+        let task : NSURLSessionDataTask = session.dataTaskWithRequest(request,
+            completionHandler: { (dataOrNil, response, error) in
+                if let data = dataOrNil {
+                    if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(data, options:[]) as? NSDictionary {
+                        self.movies = responseDictionary["results"] as! [NSDictionary]
+                        self.populateViews(self.movies)
+                        self.networkErrorAlert.hidden = true
+                    }
+                } else {
+                    MBProgressHUD.hideHUDForView(self.view, animated: true)
+                    self.networkErrorAlert.hidden = false
+                }
+        })
+        task.resume()
     }
 
     override func didReceiveMemoryWarning() {
@@ -89,7 +135,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         cell.titleLabel.text = title
         cell.overviewLabel.text = overview
         
-        if indexPath.row == self.movies.count - 1 {
+        if indexPath.row == self.movies.count - 1 && self.searchBar.hidden {
             networkRequest()
         }
 
@@ -130,7 +176,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("MovieCollectionCell", forIndexPath: indexPath) as! MovieCollectionCell
         let movie = movies[indexPath.item]
         
-        if indexPath.item == self.movies.count - 1 {
+        if indexPath.item == self.movies.count - 1 && self.searchBar.hidden {
             networkRequest()
         }
         
@@ -207,10 +253,13 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(data, options:[]) as? NSDictionary {
                         let movies = responseDictionary["results"] as! [NSDictionary]
                         let page = responseDictionary["page"] as! Int
+                        self.movies += movies
+                        self.lastPageLoaded = page
+                        
                         if let refreshControl = refreshControl {
                             refreshControl.endRefreshing()
                         }
-                        self.populateViews(movies, page: page)
+                        self.populateViews(movies)
                         self.networkErrorAlert.hidden = true
 
                     }
@@ -222,9 +271,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         task.resume()
     }
     
-    func populateViews(movies: [NSDictionary], page: Int) {
-        self.movies += movies
-        self.lastPageLoaded = page
+    func populateViews(movies: [NSDictionary]) {
         MBProgressHUD.hideHUDForView(self.view, animated: true)
         self.tableView.reloadData()
         self.collectionView.reloadData()
