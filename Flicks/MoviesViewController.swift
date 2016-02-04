@@ -52,7 +52,27 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let baseUrl = "http://image.tmdb.org/t/p/w500"
         if let posterPath = movie["poster_path"] as? String {
             let imageUrl = NSURL(string: baseUrl + posterPath)
-            cell.posterView.setImageWithURL(imageUrl!)
+            let imageRequest = NSURLRequest(URL: imageUrl!)
+
+            cell.posterView.setImageWithURLRequest(
+                imageRequest,
+                placeholderImage: nil,
+                success: { (imageRequest, imageResponse, image) -> Void in
+                    if imageResponse != nil {
+                        cell.posterView.alpha = 0.0
+                        cell.posterView.image = image
+                        UIView.animateWithDuration(0.3, animations: { () -> Void in
+                            cell.posterView.alpha = 1.0
+                        })
+                    } else {
+                        cell.posterView.image = image
+                    }
+                    self.networkErrorAlert.hidden = true
+                },
+                failure: { (imageRequest, imageResponse, error) -> Void in
+                    self.networkErrorAlert.hidden = false
+                }
+            )
         }
         
         return cell
@@ -66,6 +86,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let detailViewController = segue.destinationViewController as! DetailViewController
         let backItem = UIBarButtonItem()
 
+        cell.selectionStyle = .Blue
         self.tableView.deselectRowAtIndexPath(indexPath!, animated: true)
         backItem.title = self.navigationController!.tabBarItem.title
         navigationItem.backBarButtonItem = backItem

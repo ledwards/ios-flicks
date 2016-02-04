@@ -30,27 +30,45 @@ class DetailViewController: UIViewController {
         overviewLabel.sizeToFit()        
         self.navigationItem.title = title
         
-        let baseUrl = "http://image.tmdb.org/t/p/w500"
         if let posterPath = movie["poster_path"] as? String {
-            let imageUrl = NSURL(string: baseUrl + posterPath)
-            posterImageView.setImageWithURL(imageUrl!)
+            loadImage(posterPath)
         }
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
+    func loadImage(posterPath: String) {
+        let smallBaseUrl = "http://image.tmdb.org/t/p/w500"
+        let largeBaseUrl = "http://image.tmdb.org/t/p/w1920"
 
-    /*
-    // MARK: - Navigation
+        let smallImageUrl = NSURL(string: smallBaseUrl + posterPath)
+        let largeImageUrl = NSURL(string: largeBaseUrl + posterPath)
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+        let smallImageRequest = NSURLRequest(URL: smallImageUrl!)
+        let largeImageRequest = NSURLRequest(URL: largeImageUrl!)
+        
+        self.posterImageView.setImageWithURLRequest(
+            smallImageRequest,
+            placeholderImage: nil,
+            success: { (smallImageRequest, smallImageResponse, smallImage) -> Void in
+                self.posterImageView.alpha = 0.0
+                self.posterImageView.image = smallImage
+                
+                UIView.animateWithDuration(0.3, animations: { () -> Void in
+                    self.posterImageView.alpha = 1.0
+                },
+                completion: { (sucess) -> Void in
+                    self.posterImageView.setImageWithURLRequest(
+                        largeImageRequest,
+                        placeholderImage: smallImage,
+                        success: { (largeImageRequest, largeImageResponse, largeImage) -> Void in
+                            self.posterImageView.image = largeImage
+                        },
+                        failure: { (request, response, error) -> Void in })
+                })
+            },
+            failure: { (request, response, error) -> Void in })
     }
-    */
-
 }
