@@ -15,6 +15,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var networkErrorAlert: UIView!
+    @IBOutlet weak var searchBar: UISearchBar!
     
     var movies: [NSDictionary] = []
     var endpoint: String!
@@ -35,11 +36,14 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         navigationItem.rightBarButtonItem = segmentedButton
         segmentedControl.selectedSegmentIndex = 0
         
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Search", style: .Plain, target: self, action: "search:")
+        
         collectionView.dataSource = self
         
         tableView.dataSource = self
         tableView.delegate = self
         networkErrorAlert.hidden = true
+        searchBar.hidden = true
         
         networkRequest()
         
@@ -62,6 +66,10 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         default:
             break
         }
+    }
+    
+    func search(sender: UIView) {
+        self.searchBar.hidden = false
     }
 
     override func didReceiveMemoryWarning() {
@@ -182,7 +190,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     
     func networkRequest(refreshControl: UIRefreshControl? = nil) {
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let page = self.lastPageLoaded + 1
+        let page = refreshControl == nil ? self.lastPageLoaded + 1 : 1
         let url = NSURL(string: "http://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)&page=\(page)")
         let request = NSURLRequest(URL: url!)
         let session = NSURLSession(
@@ -197,15 +205,14 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             completionHandler: { (dataOrNil, response, error) in
                 if let data = dataOrNil {
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(data, options:[]) as? NSDictionary {
-                        self.movies += responseDictionary["results"] as! [NSDictionary]
-                        self.lastPageLoaded = responseDictionary["page"] as! Int
-                        MBProgressHUD.hideHUDForView(self.view, animated: true)
-                        self.tableView.reloadData()
-                        self.collectionView.reloadData()
-                        self.networkErrorAlert.hidden = true
+                        let movies = responseDictionary["results"] as! [NSDictionary]
+                        let page = responseDictionary["page"] as! Int
                         if let refreshControl = refreshControl {
                             refreshControl.endRefreshing()
                         }
+                        self.populateViews(movies, page: page)
+                        self.networkErrorAlert.hidden = true
+
                     }
                 } else {
                     MBProgressHUD.hideHUDForView(self.view, animated: true)
@@ -213,5 +220,13 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                 }
         })
         task.resume()
+    }
+    
+    func populateViews(movies: [NSDictionary], page: Int) {
+        self.movies += movies
+        self.lastPageLoaded = page
+        MBProgressHUD.hideHUDForView(self.view, animated: true)
+        self.tableView.reloadData()
+        self.collectionView.reloadData()
     }
 }
