@@ -65,6 +65,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         
         let detailViewController = segue.destinationViewController as! DetailViewController
         let backItem = UIBarButtonItem()
+
+        self.tableView.deselectRowAtIndexPath(indexPath!, animated: true)
         backItem.title = self.navigationController!.tabBarItem.title
         navigationItem.backBarButtonItem = backItem
         detailViewController.movie = movie

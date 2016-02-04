@@ -14,5 +14,5 @@ __Optional__
 - [ ] Add a search bar.
 - [ ] All images fade in as they are loading.
 - [ ] For the large poster, load the low-res image first and switch to high-res when complete.
-- [ ] Customize the highlight and selection effect of the cell.
+- [x] Customize the highlight and selection effect of the cell.
 - [x] Customize the navigation bar.
