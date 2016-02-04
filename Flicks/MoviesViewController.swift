@@ -25,7 +25,12 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: "refreshCallback:", forControlEvents: UIControlEvents.ValueChanged)
         tableView.insertSubview(refreshControl, atIndex: 0)
-        tableView.hidden = true
+        collectionView.hidden = true
+        
+        let segmentedControl = UISegmentedControl(items: ["List", "Collection"])
+        segmentedControl.sizeToFit()
+        let segmentedButton = UIBarButtonItem(customView: segmentedControl)
+        navigationItem.rightBarButtonItem = segmentedButton
         
         collectionView.dataSource = self
         
@@ -121,12 +126,12 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         var indexPath: NSIndexPath? = nil
-        if let _ = sender as? UITableView {
-            let cell = sender as! UITableViewCell
+        if let _ = sender as? MovieCell {
+            let cell = sender as! MovieCell
             indexPath = tableView.indexPathForCell(cell)
             cell.selectionStyle = .Blue
-        } else {
-            let cell = sender as! UICollectionViewCell
+        } else if let _ = sender as? MovieCollectionCell {
+            let cell = sender as! MovieCollectionCell
             indexPath = collectionView.indexPathForCell(cell)
         }
         let movie = movies![indexPath!.row]
