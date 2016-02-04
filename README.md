@@ -16,3 +16,6 @@ __Optional__
 - [x] For the large poster, load the low-res image first and switch to high-res when complete.
 - [x] Customize the highlight and selection effect of the cell.
 - [x] Customize the navigation bar.
+
+__My Own Ideas__
+- [ ] Add infinite scroll
